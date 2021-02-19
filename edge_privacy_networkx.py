@@ -136,7 +136,7 @@ def first_hit_weight(k, w, bound, costs, **args):
         return w[0]
 
     high = len(w) - 1
-    low = 1
+    low = 0
     while (high - low) > 1:
         mid = (low + high) // 2
         cost = retrieve(costs, mid, g, w, **args)
@@ -148,15 +148,16 @@ def first_hit_weight(k, w, bound, costs, **args):
 
 # -----------------------------------------------------------------------------
 # Generate a random graph
-n = 2**6
-p = 1.0
+n = 2**8
+p = 0.1
 g = nx.random_graphs.gnp_random_graph(n=n, p=p)
 
 bound = 10.0 # An upper bound on the edge weights in the graph
-weights = {e: bound*np.random.random() for e in g.edges()}
+weights = {e: bound*np.random.randint(1,11)/10.0 for e in g.edges()}
 nx.set_edge_attributes(g, weights, "weight")
 
 edge_weights = sorted([g.edges[e]["weight"] for e in g.edges()])
+edge_weights = sorted(set(edge_weights))
 
 # -----------------------------------------------------------------------------
 # Compute the local sensitivity at distance s for 0 <= s <= n
@@ -179,6 +180,7 @@ epsilon = 1.0
 beta = epsilon / 6.0
 smooth_scaling = np.exp(-beta * np.arange(n+1))
 smooth_sensitivity = np.max(lsd * smooth_scaling)
+print(smooth_sensitivity)
 
 # -----------------------------------------------------------------------------
 # Compute the exact MST cost

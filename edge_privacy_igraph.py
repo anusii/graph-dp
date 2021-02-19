@@ -138,7 +138,7 @@ def first_hit_weight(k, g, w, bound, costs, **args):
         return w[0]
 
     high = len(w) - 1
-    low = 1
+    low = 0
     while (high - low) > 1:
         mid = (low + high) // 2
         cost = retrieve(costs, mid, g, w, **args)
@@ -150,18 +150,19 @@ def first_hit_weight(k, g, w, bound, costs, **args):
 
 # -----------------------------------------------------------------------------
 # Generate a random graph
-n = 2**6
-p = 1.0
+n = 2**8
+p = 0.1
 g = igraph.Graph.Erdos_Renyi(n=n, p=p)
-bound = 1.0 # An upper bound on the edge weights in the graph
-edge_weights = bound * np.random.random(len(g.es))
+bound = 10.0 # An upper bound on the edge weights in the graph
+edge_weights = bound * np.random.randint(1,11, size=len(g.es))/10.0#np.random.random(len(g.es))
 g.es["weight"] = edge_weights
 edge_weights.sort()
+edge_weights = sorted(set(edge_weights))
 
 # -----------------------------------------------------------------------------
 # Compute the local sensitivity at distance s for 0 <= s <= n
 costs = dict()
-lsd1 = np.array([first_hit_weight(k, g, edge_weights, bound, costs) for k in range(n+1)])
+%time lsd1 = np.array([first_hit_weight(k, g, edge_weights, bound, costs) for k in range(n+1)])
 
 mst = g.spanning_tree(weights="weight")
 lsd2 = np.zeros(n+1)
@@ -179,6 +180,7 @@ epsilon = 1.0
 beta = epsilon / 6.0
 smooth_scaling = np.exp(-beta * np.arange(n+1))
 smooth_sensitivity = np.max(lsd * smooth_scaling)
+print(smooth_sensitivity)
 
 # -----------------------------------------------------------------------------
 # Compute the exact MST cost
