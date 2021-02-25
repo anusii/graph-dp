@@ -71,8 +71,9 @@ G = nx.random_graphs.gnp_random_graph(n, p)
 
 # -----------------------------------------------------------------------------
 # edge count
-# Compute exact edge count
 h = np.arange(n+1) / 2.0
+
+# Compute exact edge count
 print("Exact edge count = %i" % exact_count(G, h))
 
 # Compute max flow for graphs of bounded degree
@@ -91,6 +92,8 @@ print("Differentially private edge count = %f\n" % dp_edge_count)
 # -----------------------------------------------------------------------------
 # node count
 h = np.ones(n+1)
+
+# Compute exact node count
 print("Exact node count = %i" % exact_count(G, h))
 
 # Compute max flow for graphs of bounded degree
@@ -111,6 +114,8 @@ print("Differentially private node count = %f\n" % dp_node_count)
 # k-star count
 k = 2
 h = scipy.special.comb(np.arange(n+1), k)
+
+# Compute exact k-star count
 print("Exact k-star count = %i" % exact_count(G, h))
 
 # Compute max flow for graphs of bounded degree
