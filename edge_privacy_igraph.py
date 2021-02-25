@@ -1,6 +1,6 @@
 # Reference implementations of techniques described in the paper
 # Smooth Sensitivity and Sampling in Private Data Analysis
-# using igraph
+# using igraph and relm
 
 import numpy as np
 import igraph

@@ -1,6 +1,6 @@
 # Reference implementations of techniques described in the paper
 # Analyzing Graphs with Node Differential Privacy
-# using networkx and scipy.optimize
+# using networkx, scipy.optimize, and relm
 
 import numpy as np
 import networkx as nx
