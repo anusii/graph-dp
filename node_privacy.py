@@ -1,16 +1,14 @@
 import numpy as np
 import networkx as nx
 
-import copy
+import scipy.optimize
+import scipy.interpolate
+import scipy.special
 
 from relm.mechanisms import LaplaceMechanism, CauchyMechanism
 
 # =============================================================================
 # Convex Optimization Approach
-# =============================================================================
-
-# =============================================================================
-# Edge Counts
 # =============================================================================
 def flow_graph(G, D):
     V_left = list(zip(["left"] * len(G), G.nodes()))
@@ -25,145 +23,102 @@ def flow_graph(G, D):
         [(("left", u), ("right", v), 1) for u, v in G.edges()], weight="capacity"
     )
     F.add_weighted_edges_from(
-        [(("right", u), ("left", v), 1) for u, v in G.edges()], weight="capacity"
+        [(("left", v), ("right", u), 1) for u, v in G.edges()], weight="capacity"
     )
     return F
 
 
-n = 2 ** 8
-D = 2 ** 7
-p = 0.25
-G = nx.random_graphs.gnp_random_graph(n, p)
-print(max(dict(G.degree()).values()))
+# =============================================================================
 
+n = np.random.randint(2 ** 7, 2 ** 8)
+D = 2 ** 3
+p = 2 ** -6
+G = nx.random_graphs.gnp_random_graph(n, p)
+# G = nx.star_graph(n - 1)
 F = flow_graph(G, D)
+nodes = list(F.nodes())
+edges = list(F.edges())
+adjacency = np.zeros((len(nodes), len(edges)))
+for j in range(len(edges)):
+    i0 = nodes.index(edges[j][0])
+    i1 = nodes.index(edges[j][1])
+    adjacency[i0, j] = -1
+    adjacency[i1, j] = 1
 
-foo = nx.minimum_cut_value(F, _s="s", _t="t")
+capacities = np.array([F.edges[e]["capacity"] for e in F.edges()])
+x0 = np.random.random(capacities.size) * capacities
+mask = np.array([("s" in edge) for edge in edges])
+bounds = [(0, capacity) for capacity in capacities]
+constraint = scipy.optimize.LinearConstraint(adjacency[:-2], 0, 0)
 
-print(foo)
-print(len(G.edges()))
+# -----------------------------------------------------------------------------
+# edge count
+print("Exact edge count = %i" % len(G.edges()))
 
-# =============================================================================
-# Linear functions of the degree sequence with concave base function h
-# =============================================================================
-class Edge(object):
-    """ An undirected, capacity limited edge. """
+x = np.arange(D + 1)
+h_edge = scipy.interpolate.interp1d(x, x / 2.0)
+f_edge = lambda x, *args: -np.sum(h_edge(x[tuple(args[0])]))
+res_edge = scipy.optimize.minimize(
+    fun=f_edge, x0=x0, args=[mask], bounds=bounds, constraints=[constraint]
+)
+print("Bounded-degree edge count = %f" % -res_edge.fun)
 
-    def __init__(self, capacity):
-        self.capacity = capacity
-        self.flow = cp.Variable()
+epsilon = 1.0
+y = h_edge(x)
+sensitivity = np.max(y) + np.max(y[1:] - y[:-1])
+mechanism = LaplaceMechanism(epsilon=epsilon, sensitivity=sensitivity)
+dp_edge_count = mechanism.release(np.array([-res_edge.fun]))[0]
+print("Differentially private edge count = %f\n" % dp_edge_count)
 
-    # Connects two nodes via the edge.
-    def connect(self, in_node, out_node):
-        in_node.edge_flows.append(-self.flow)
-        out_node.edge_flows.append(self.flow)
+# -----------------------------------------------------------------------------
+# node count
+print("Exact node count = %i" % len(G.nodes()))
 
-    # Returns the edge's internal constraints.
-    def constraints(self):
-        return [cp.abs(self.flow) <= self.capacity]
+x = np.arange(D + 1)
+h_node = scipy.interpolate.interp1d(x, np.ones(x.size))
+f_node = lambda x, *args: -np.sum(h_node(x[tuple(args[0])]))
+res_node = scipy.optimize.minimize(
+    fun=f_node, x0=x0, args=[mask], bounds=bounds, constraints=[constraint]
+)
+print("Bounded-degree node count = %f" % -res_node.fun)
 
+epsilon = 1.0
+y = h_node(x)
+sensitivity = np.max(y) + np.max(y[1:] - y[:-1])
+mechanism = LaplaceMechanism(epsilon=epsilon, sensitivity=sensitivity)
+dp_node_count = mechanism.release(np.array([-res_node.fun]))[0]
+print("Differentially private node count = %f\n" % dp_node_count)
 
-class Node(object):
-    """ A node with accumulation. """
+# -----------------------------------------------------------------------------
+# 3-star count
+x = np.arange(D + 1)
+h_3star = scipy.interpolate.interp1d(x, scipy.special.comb(x, 3))
+f_3star = lambda x, *args: -np.sum(h_3star(x[tuple(args[0])]))
+res_3star = scipy.optimize.minimize(
+    fun=f_3star, x0=x0, args=[mask], bounds=bounds, constraints=[constraint]
+)
+print("Bounded-degree 3-star count = %f" % -res_3star.fun)
 
-    def __init__(self, accumulation=0):
-        self.accumulation = accumulation
-        self.edge_flows = []
-
-    # Returns the node's internal constraints.
-    def constraints(self):
-        return [sum(f for f in self.edge_flows) == self.accumulation]
-
-
-n = np.random.randint(2 ** 6, 2 ** 7)
-D = 2 ** 5
-p = 2 ** -2
-G = nx.random_graphs.gnp_random_graph(n, p)
-
-left_nodes = [Node() for node in G.nodes()]
-right_nodes = [Node() for node in G.nodes()]
-source = Node(accumulation=cp.Variable())
-target = Node(accumulation=cp.Variable())
-nodes = left_nodes + right_nodes + [source, target]
-
-source_edges = []
-for ln in left_nodes:
-    edge = Edge(capacity=D)
-    edge.connect(source, ln)
-    source_edges.append(edge)
-
-target_edges = []
-for rn in right_nodes:
-    edge = Edge(capacity=D)
-    edge.connect(rn, target)
-    target_edges.append(edge)
-
-inter_edges = []
-for u, v in G.edges():
-    edge = Edge(capacity=1.0)
-    edge.connect(left_nodes[u], right_nodes[v])
-    inter_edges.append(edge)
-    edge = Edge(capacity=1.0)
-    edge.connect(left_nodes[v], right_nodes[u])
-    inter_edges.append(edge)
-
-edges = source_edges + target_edges + inter_edges
-
-constraints = []
-for obj in nodes + edges:
-    constraints += obj.constraints()
-
-x = np.arange(n)
-# y = x / 2.0
-y = np.ones(x.shape)
-
-
-def h1(x):
-    x_low = cp.floor(x)
-    x_high = cp.ceil(x)
-    return y[int(x_low.value)] * (x - x_low) + y[int(x_high.value)] * (x_high - x)
-
-
-def h2(x):
-    m = y[1:] - y[:-1]
-    x0 = np.arange(n - 1)
-    y0 = y[:-1]
-    z = y0 + cp.multiply(m, (x - x0))
-    return cp.min(z)
-
-
-def h(x):
-    try:
-        ret = h1(x)
-    except TypeError:
-        ret = h2(x)
-    return ret
-
-
-prob = cp.Problem(cp.Maximize(cp.sum([h(e.flow) for e in source_edges])), constraints)
-value = prob.solve()
-
-print(value)
-# print(len(G.edges()))
-print(len(G.nodes()))
+epsilon = 1.0
+y = h_3star(x)
+sensitivity = np.max(y) + np.max(y[1:] - y[:-1])
+mechanism = LaplaceMechanism(epsilon=epsilon, sensitivity=sensitivity)
+dp_3star_count = mechanism.release(np.array([-res_3star.fun]))[0]
+print("Differentially private 3-star count = %f\n" % dp_3star_count)
 
 # =============================================================================
 # Linear programming approach
 # =============================================================================
-n = np.random.randint(2 ** 4, 2 ** 5)
+n = np.random.randint(2 ** 7, 2 ** 8)
 D = 2 ** 2
-p = 2 ** -2
+p = 2 ** -4
 G = nx.random_graphs.gnp_random_graph(n, p)
 
 k = 3
 triangles = nx.triads_by_type(nx.DiGraph(G))["300"]
-print(D)
-print(max(dict(G.degree).values()))
+print("Exact triangle count = %i" % len(triangles))
 
-
-print(k * D * (D - 1) ** (k - 2))
-print(max(nx.triangles(G).values()))
-
+# Compute bounded-degree triangle count using linear programming technique
 c = -np.ones(len(triangles))
 A_ub = np.zeros((n, len(triangles)))
 for i, t in enumerate(triangles):
@@ -171,10 +126,16 @@ for i, t in enumerate(triangles):
     for node in nodes:
         A_ub[node, i] = 1
 
-b_ub = np.ones(n) * k * D * (D - 1) ** (k - 2)
+sensitivity = k * D * (D - 1) ** (k - 2)
+b_ub = np.ones(n) * sensitivity
 
 bounds = (0.0, 1.0)
 
 res = scipy.optimize.linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds)
-print(len(triangles))
-print(-res.fun)
+print("Bounded-degree triangle count = %f" % -res.fun)
+
+# Compute differentially private triangle count
+epsilon = 1.0
+mechanism = LaplaceMechanism(epsilon=epsilon, sensitivity=sensitivity)
+dp_triangle_count = mechanism.release(np.array([-res.fun]))[0]
+print("Differentially private triangle count = %f\n" % dp_triangle_count)
