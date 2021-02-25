@@ -64,10 +64,13 @@ def bounded_degree_flow(G, h, D):
     return -res.fun
 
 # =============================================================================
+# Generate a random graph
 n = 2**7
-D = 2 ** 3
 p = 2 ** -6
 G = nx.random_graphs.gnp_random_graph(n, p)
+
+# Set the degree bound
+D = 2 ** 3
 
 # -----------------------------------------------------------------------------
 # edge count
@@ -135,17 +138,21 @@ print("Differentially private k-star count = %f\n" % dp_kstar_count)
 # =============================================================================
 # Linear Programming
 # =============================================================================
+# Generate a random graph
 n = np.random.randint(2 ** 7, 2 ** 8)
-D = 2 ** 2
 p = 2 ** -4
 G = nx.random_graphs.gnp_random_graph(n, p)
 
+# Set the degree bound
+D = 2 ** 2
+
+# -----------------------------------------------------------------------------
 # Compute the exact triangle count
 k = 3
 triangles = nx.triads_by_type(nx.DiGraph(G))["300"]
 print("Exact triangle count = %i" % len(triangles))
 
-# Compute bounded-degree triangle count using linear programming technique
+# Compute bounded-degree triangle count using linear programming
 c = -np.ones(len(triangles))
 A_ub = np.zeros((n, len(triangles)))
 for i, t in enumerate(triangles):
@@ -160,7 +167,7 @@ bounds = (0.0, 1.0)
 res = scipy.optimize.linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds)
 print("Bounded-degree triangle count = %f" % -res.fun)
 
-# Compute differentially private triangle count
+# Create a differentially private release mechanism
 epsilon = 1.0
 mechanism = LaplaceMechanism(epsilon=epsilon, sensitivity=sensitivity)
 
