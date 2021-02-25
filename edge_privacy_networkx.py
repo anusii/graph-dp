@@ -56,7 +56,7 @@ def local_sensitivity_dist(A, B, n):
     break_list = sorted(break_points.items(), key=lambda _: _[1])
     return np.array([h(s, break_list) for s in range(n+1)])
 
-# -----------------------------------------------------------------------------
+# =============================================================================
 # Generate a random graph
 n = 2**13
 p = 0.01
@@ -146,7 +146,7 @@ def first_hit_weight(k, w, bound, costs, **args):
             high = mid
     return w[high]
 
-# -----------------------------------------------------------------------------
+# =============================================================================
 # Generate a random graph
 n = 2**8
 p = 0.1
@@ -162,7 +162,8 @@ edge_weights = sorted(set(edge_weights))
 # -----------------------------------------------------------------------------
 # Compute the local sensitivity at distance s for 0 <= s <= n
 costs = dict()
-%time lsd1 = np.array([first_hit_weight(k, edge_weights, bound, costs) for k in range(n+1)])
+lsd1 = np.array([first_hit_weight(k, edge_weights, bound, costs)
+                 for k in range(n+1)])
 
 mst = nx.minimum_spanning_tree(g)
 lsd2 = np.zeros(n+1)

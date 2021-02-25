@@ -1,3 +1,7 @@
+# Reference implementations of techniques described in the paper
+# Analyzing Graphs with Node Differential Privacy
+# using networkx and scipy.optimize
+
 import numpy as np
 import networkx as nx
 
@@ -8,7 +12,7 @@ import scipy.special
 from relm.mechanisms import LaplaceMechanism, CauchyMechanism
 
 # =============================================================================
-# Convex Optimization Approach
+# Convex Optimization
 # =============================================================================
 def exact_count(G, h):
     x = np.arange(len(h))
@@ -111,7 +115,7 @@ dp_kstar_count = mechanism.release(np.array([bd_res]))[0]
 print("Differentially private k-star count = %f\n" % dp_kstar_count)
 
 # =============================================================================
-# Linear programming approach
+# Linear Programming
 # =============================================================================
 n = np.random.randint(2 ** 7, 2 ** 8)
 D = 2 ** 2

@@ -56,7 +56,7 @@ def local_sensitivity_dist(A, B, n):
     break_list = sorted(break_points.items(), key=lambda _: _[1])
     return np.array([h(s, break_list) for s in range(n+1)])
 
-# -----------------------------------------------------------------------------
+# =============================================================================
 # Generate a random graph
 n = 2**8
 p = 0.5
@@ -148,13 +148,13 @@ def first_hit_weight(k, g, w, bound, costs, **args):
             high = mid
     return w[high]
 
-# -----------------------------------------------------------------------------
+# =============================================================================
 # Generate a random graph
 n = 2**8
 p = 0.1
 g = igraph.Graph.Erdos_Renyi(n=n, p=p)
 bound = 10.0 # An upper bound on the edge weights in the graph
-edge_weights = bound * np.random.randint(1,11, size=len(g.es))/10.0#np.random.random(len(g.es))
+edge_weights = bound * np.random.randint(1,11, size=len(g.es))/10.0
 g.es["weight"] = edge_weights
 edge_weights.sort()
 edge_weights = sorted(set(edge_weights))
@@ -162,7 +162,8 @@ edge_weights = sorted(set(edge_weights))
 # -----------------------------------------------------------------------------
 # Compute the local sensitivity at distance s for 0 <= s <= n
 costs = dict()
-%time lsd1 = np.array([first_hit_weight(k, g, edge_weights, bound, costs) for k in range(n+1)])
+lsd1 = np.array([first_hit_weight(k, g, edge_weights, bound, costs)
+                 for k in range(n+1)])
 
 mst = g.spanning_tree(weights="weight")
 lsd2 = np.zeros(n+1)
