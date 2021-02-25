@@ -90,7 +90,12 @@ dp_node_count = mechanism.release(np.array([-res_node.fun]))[0]
 print("Differentially private node count = %f\n" % dp_node_count)
 
 # -----------------------------------------------------------------------------
-# 3-star count
+# k-star count
+k = 3
+x = np.arange(D + 1)
+h_kstar = scipy.interpolate.interp1d(x, scipy.special.comb(x, k))
+print("Exact k-star count = %i" % np.sum(h_kstar(x)))
+
 x = np.arange(D + 1)
 h_3star = scipy.interpolate.interp1d(x, scipy.special.comb(x, 3))
 f_3star = lambda x, *args: -np.sum(h_3star(x[tuple(args[0])]))
