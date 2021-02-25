@@ -123,7 +123,9 @@ def lightweight_graph(g, w):
     return gw
 
 def min_cut(g, w, **args):
-    return nx.edge_connectivity(lightweight_graph(g, w), flow_func=shortest_augmenting_path, **args)
+    return nx.edge_connectivity(lightweight_graph(g, w),
+                                flow_func=shortest_augmenting_path,
+                                **args)
 
 def retrieve(costs, key, g, w, **args):
     if key not in costs:
