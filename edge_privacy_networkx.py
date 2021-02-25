@@ -92,7 +92,7 @@ smooth_sensitivity = np.max(lsd * smooth_scaling)
 # Compute the exact triangle count
 triangle_count = np.array([sum(nx.triangles(g).values()) / 3.0])
 
-# Create a differentiall private release mechanism
+# Create a differentially private release mechanism
 mechanism = CauchyMechanism(epsilon=epsilon, beta=beta)
 
 # Compute the differentially private query response
