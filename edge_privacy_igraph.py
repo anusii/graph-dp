@@ -1,3 +1,6 @@
+# Reference implementations of techniques described in the paper
+# Smooth Sensitivity and Sampling in Private Data Analysis
+# using igraph
 import numpy as np
 import igraph
 from relm.mechanisms import LaplaceMechanism, CauchyMechanism

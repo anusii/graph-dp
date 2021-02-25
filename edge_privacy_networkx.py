@@ -1,3 +1,6 @@
+# Reference implementations of techniques described in the paper
+# Smooth Sensitivity and Sampling in Private Data Analysis
+# using networkx
 import numpy as np
 import networkx as nx
 from relm.mechanisms import LaplaceMechanism, CauchyMechanism
