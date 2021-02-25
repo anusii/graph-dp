@@ -4,12 +4,12 @@
 
 import numpy as np
 import networkx as nx
-from relm.mechanisms import LaplaceMechanism, CauchyMechanism
+from relm.mechanisms import CauchyMechanism
 
 # =============================================================================
 # Triangle Counts
 # =============================================================================
-def f(s, a, b, n):
+def ls_util(s, a, b, n):
     """ Utility function used in computation of local sensitivities. """
     return np.minimum(a + np.floor((s + np.minimum(s, b)) / 2.0), n - 2)
 
@@ -39,10 +39,10 @@ def first_hit(x, break_list):
     """ Find the key for the first pair (k,v) with v > x. """
     return next((k for k,v in break_list if x <= v))
 
-def h(s, break_list):
+def max_ls_util(s, break_list):
     """ Compute the maximal value of f(s, a, b, n) over all possible a, b. """
     a, b = first_hit(s, break_list)
-    return f(s, a, b, n)
+    return ls_util(s, a, b, n)
 
 def local_sensitivity_dist(A, B, n):
     """ Compute the local sensitivity at distance s for 0 <= s <= n. """
@@ -58,7 +58,7 @@ def local_sensitivity_dist(A, B, n):
             break_points[survivor] = n+1
             prev_survivor = survivor
     break_list = sorted(break_points.items(), key=lambda _: _[1])
-    return np.array([h(s, break_list) for s in range(n+1)])
+    return np.array([max_ls_util(s, break_list) for s in range(n+1)])
 
 # =============================================================================
 # Generate a random graph
@@ -98,24 +98,12 @@ mechanism = CauchyMechanism(epsilon=epsilon, beta=beta)
 # Compute the differentially private query response
 dp_triangle_count = mechanism.release(triangle_count, smooth_sensitivity)
 
-print(triangle_count)
-print(dp_triangle_count)
+print("Exact triangle count = %i" % int(triangle_count))
+print("Differentially private triangle count = %f" % dp_triangle_count)
 
 # =============================================================================
-# Minimum Spanning Tree
+# Minimum Spanning Tree Cost
 # =============================================================================
-from networkx.algorithms.flow import shortest_augmenting_path
-
-def f1(k, edge_weights, bound):
-    if k >= len(edge_weights): return bound
-    else: return edge_weights[k]
-
-def f2(k, edge_weights, bound):
-    if (k+1) >= len(edge_weights): temp = bound
-    else: temp = edge_weights[k+1]
-    if len(edge_weights) > 0: return temp - edge_weights[0]
-    else: return 0
-
 def lightweight_graph(g, w):
     gw = nx.Graph()
     gw.add_nodes_from(g)
@@ -123,9 +111,7 @@ def lightweight_graph(g, w):
     return gw
 
 def min_cut(g, w, **args):
-    return nx.edge_connectivity(lightweight_graph(g, w),
-                                flow_func=shortest_augmenting_path,
-                                **args)
+    return nx.edge_connectivity(lightweight_graph(g, w), **args)
 
 def retrieve(costs, key, g, w, **args):
     if key not in costs:
@@ -188,7 +174,6 @@ epsilon = 1.0
 beta = epsilon / 6.0
 smooth_scaling = np.exp(-beta * np.arange(n+1))
 smooth_sensitivity = np.max(lsd * smooth_scaling)
-print(smooth_sensitivity)
 
 # -----------------------------------------------------------------------------
 # Compute the exact MST cost
@@ -201,5 +186,5 @@ mechanism = CauchyMechanism(epsilon=epsilon, beta=beta)
 # Compute the differentially private query response
 dp_mst_cost = mechanism.release(mst_cost, smooth_sensitivity)
 
-print(mst_cost)
-print(dp_mst_cost)
+print("Exact MST cost = %f" % mst_cost)
+print("Differentially private MST cost = %f" % dp_mst_cost)
