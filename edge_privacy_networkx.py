@@ -1,6 +1,7 @@
 # Reference implementations of techniques described in the paper
 # Smooth Sensitivity and Sampling in Private Data Analysis
 # using networkx
+
 import numpy as np
 import networkx as nx
 from relm.mechanisms import LaplaceMechanism, CauchyMechanism
@@ -172,7 +173,8 @@ mst = nx.minimum_spanning_tree(g)
 lsd2 = np.zeros(n+1)
 for e in mst.edges():
     costs = dict()
-    first_hit_weights = [first_hit_weight(k+1, edge_weights, bound, costs, s=e[0], t=e[1])
+    first_hit_weights = [first_hit_weight(k+1, edge_weights, bound, costs,
+                                          s=e[0], t=e[1])
                          for k in range(n+1)]
     lsd2_e = np.array(first_hit_weights) - mst.edges[e]["weight"]
     lsd2 = np.maximum(lsd2, lsd2_e)

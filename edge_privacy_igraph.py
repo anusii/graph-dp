@@ -1,6 +1,7 @@
 # Reference implementations of techniques described in the paper
 # Smooth Sensitivity and Sampling in Private Data Analysis
 # using igraph
+
 import numpy as np
 import igraph
 from relm.mechanisms import LaplaceMechanism, CauchyMechanism
@@ -172,7 +173,8 @@ mst = g.spanning_tree(weights="weight")
 lsd2 = np.zeros(n+1)
 for e, st in zip(mst.es, mst.get_edgelist()):
     costs = dict()
-    first_hit_weights = [first_hit_weight(k+1, g, edge_weights, bound, costs, source=st[0], target=st[1])
+    first_hit_weights = [first_hit_weight(k+1, g, edge_weights, bound, costs,
+                                          source=st[0], target=st[1])
                          for k in range(n+1)]
     lsd2_e = np.array(first_hit_weights) - e["weight"]
     lsd2 = np.maximum(lsd2, lsd2_e)
