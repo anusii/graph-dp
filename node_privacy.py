@@ -10,6 +10,13 @@ from relm.mechanisms import LaplaceMechanism, CauchyMechanism
 # =============================================================================
 # Convex Optimization Approach
 # =============================================================================
+def exact_count(G, h):
+    x = np.arange(len(h))
+    h_fun = scipy.interpolate.interp1d(x, h)
+    degree_histogram = np.array(nx.degree_histogram(G))
+    exact_count = degree_histogram @ h_fun(np.arange(len(degree_histogram)))
+    return exact_count
+
 def flow_graph(G, D):
     V_left = list(zip(["left"] * len(G), G.nodes()))
     V_right = list(zip(["right"] * len(G), G.nodes()))
@@ -27,89 +34,81 @@ def flow_graph(G, D):
     )
     return F
 
+def bounded_degree_flow(G, h, D):
+    F = flow_graph(G, D)
+    nodes = list(F.nodes())
+    edges = list(F.edges())
+    adjacency = np.zeros((len(nodes), len(edges)))
+    for j in range(len(edges)):
+        i0 = nodes.index(edges[j][0])
+        i1 = nodes.index(edges[j][1])
+        adjacency[i0, j] = -1
+        adjacency[i1, j] = 1
+
+    capacities = np.array([F.edges[e]["capacity"] for e in F.edges()])
+    x0 = np.random.random(capacities.size) * capacities
+    mask = np.array([("s" in edge) for edge in edges])
+    bounds = [(0, capacity) for capacity in capacities]
+    constraint = scipy.optimize.LinearConstraint(adjacency[:-2], 0, 0)
+
+    x = np.arange(D + 1)
+    h_fun = scipy.interpolate.interp1d(x, h[:D+1])
+    f = lambda x, *args: -np.sum(h_fun(x[tuple(args[0])]))
+    res = scipy.optimize.minimize(
+        fun=f, x0=x0, args=[mask], bounds=bounds, constraints=[constraint]
+    )
+    return -res.fun
 
 # =============================================================================
-
-n = np.random.randint(2 ** 7, 2 ** 8)
+n = 2**7
 D = 2 ** 3
 p = 2 ** -6
 G = nx.random_graphs.gnp_random_graph(n, p)
-# G = nx.star_graph(n - 1)
-F = flow_graph(G, D)
-nodes = list(F.nodes())
-edges = list(F.edges())
-adjacency = np.zeros((len(nodes), len(edges)))
-for j in range(len(edges)):
-    i0 = nodes.index(edges[j][0])
-    i1 = nodes.index(edges[j][1])
-    adjacency[i0, j] = -1
-    adjacency[i1, j] = 1
-
-capacities = np.array([F.edges[e]["capacity"] for e in F.edges()])
-x0 = np.random.random(capacities.size) * capacities
-mask = np.array([("s" in edge) for edge in edges])
-bounds = [(0, capacity) for capacity in capacities]
-constraint = scipy.optimize.LinearConstraint(adjacency[:-2], 0, 0)
 
 # -----------------------------------------------------------------------------
 # edge count
-print("Exact edge count = %i" % len(G.edges()))
+h = np.arange(n+1) / 2.0
+print("Exact edge count = %i" % exact_count(G, h))
 
-x = np.arange(D + 1)
-h_edge = scipy.interpolate.interp1d(x, x / 2.0)
-f_edge = lambda x, *args: -np.sum(h_edge(x[tuple(args[0])]))
-res_edge = scipy.optimize.minimize(
-    fun=f_edge, x0=x0, args=[mask], bounds=bounds, constraints=[constraint]
-)
-print("Bounded-degree edge count = %f" % -res_edge.fun)
+bd_res = bounded_degree_flow(G, h, D)
+print("Bounded-degree edge count = %f" % bd_res)
 
 epsilon = 1.0
-y = h_edge(x)
-sensitivity = np.max(y) + np.max(y[1:] - y[:-1])
+sensitivity = np.max(h[:(D+1)]) + np.max(h[1:(D+1)] - h[:D])
 mechanism = LaplaceMechanism(epsilon=epsilon, sensitivity=sensitivity)
-dp_edge_count = mechanism.release(np.array([-res_edge.fun]))[0]
+dp_edge_count = mechanism.release(np.array([bd_res]))[0]
 print("Differentially private edge count = %f\n" % dp_edge_count)
 
 # -----------------------------------------------------------------------------
 # node count
-print("Exact node count = %i" % len(G.nodes()))
+h = np.ones(n+1)
+print("Exact node count = %i" % exact_count(G, h))
 
-x = np.arange(D + 1)
-h_node = scipy.interpolate.interp1d(x, np.ones(x.size))
-f_node = lambda x, *args: -np.sum(h_node(x[tuple(args[0])]))
-res_node = scipy.optimize.minimize(
-    fun=f_node, x0=x0, args=[mask], bounds=bounds, constraints=[constraint]
-)
-print("Bounded-degree node count = %f" % -res_node.fun)
+bd_res = bounded_degree_flow(G, h, D)
+print("Bounded-degree node count = %f" % bd_res)
 
 epsilon = 1.0
-y = h_node(x)
-sensitivity = np.max(y) + np.max(y[1:] - y[:-1])
+y = h[:(D+1)]
+sensitivity = np.max(h[:(D+1)]) + np.max(h[1:(D+1)] - h[:D])
 mechanism = LaplaceMechanism(epsilon=epsilon, sensitivity=sensitivity)
-dp_node_count = mechanism.release(np.array([-res_node.fun]))[0]
+dp_node_count = mechanism.release(np.array([bd_res]))[0]
 print("Differentially private node count = %f\n" % dp_node_count)
 
 # -----------------------------------------------------------------------------
 # k-star count
-k = 3
-x = np.arange(D + 1)
-h_kstar = scipy.interpolate.interp1d(x, scipy.special.comb(x, k))
-print("Exact k-star count = %i" % np.sum(h_kstar(x)))
+k = 2
+h = scipy.special.comb(np.arange(n+1), k)
+print("Exact k-star count = %i" % exact_count(G, h))
 
-x = np.arange(D + 1)
-h_3star = scipy.interpolate.interp1d(x, scipy.special.comb(x, 3))
-f_3star = lambda x, *args: -np.sum(h_3star(x[tuple(args[0])]))
-res_3star = scipy.optimize.minimize(
-    fun=f_3star, x0=x0, args=[mask], bounds=bounds, constraints=[constraint]
-)
-print("Bounded-degree 3-star count = %f" % -res_3star.fun)
+bd_res = bounded_degree_flow(G, h, D)
+print("Bounded-degree k-star count = %f" % bd_res)
 
 epsilon = 1.0
-y = h_3star(x)
-sensitivity = np.max(y) + np.max(y[1:] - y[:-1])
+y = h[:(D+1)]
+sensitivity = np.max(h[:(D+1)]) + np.max(h[1:(D+1)] - h[:D])
 mechanism = LaplaceMechanism(epsilon=epsilon, sensitivity=sensitivity)
-dp_3star_count = mechanism.release(np.array([-res_3star.fun]))[0]
-print("Differentially private 3-star count = %f\n" % dp_3star_count)
+dp_kstar_count = mechanism.release(np.array([bd_res]))[0]
+print("Differentially private k-star count = %f\n" % dp_kstar_count)
 
 # =============================================================================
 # Linear programming approach
@@ -133,7 +132,6 @@ for i, t in enumerate(triangles):
 
 sensitivity = k * D * (D - 1) ** (k - 2)
 b_ub = np.ones(n) * sensitivity
-
 bounds = (0.0, 1.0)
 
 res = scipy.optimize.linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds)
