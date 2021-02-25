@@ -148,7 +148,7 @@ bound = 10.0 # An upper bound on the edge weights in the graph
 weights = {e: bound*np.random.randint(1,11)/10.0 for e in g.edges()}
 nx.set_edge_attributes(g, weights, "weight")
 
-edge_weights = sorted([g.edges[e]["weight"] for e in g.edges()])
+edge_weights = [g.edges[e]["weight"] for e in g.edges()]
 edge_weights = sorted(set(edge_weights))
 
 # -----------------------------------------------------------------------------

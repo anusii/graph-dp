@@ -147,10 +147,11 @@ def first_hit_weight(k, g, w, bound, costs, **args):
 n = 2**8
 p = 0.1
 g = igraph.Graph.Erdos_Renyi(n=n, p=p)
+
 bound = 10.0 # An upper bound on the edge weights in the graph
 edge_weights = bound * np.random.randint(1,11, size=len(g.es))/10.0
 g.es["weight"] = edge_weights
-edge_weights.sort()
+
 edge_weights = sorted(set(edge_weights))
 
 # -----------------------------------------------------------------------------
