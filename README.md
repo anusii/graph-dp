@@ -1,4 +1,3 @@
-# graph-dp
+# Graph Differential Privacy
 
-Testing, testing, testing.
-
+Implementations of differentially private release mechanisms for graph statistics.
