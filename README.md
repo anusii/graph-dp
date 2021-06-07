@@ -39,7 +39,7 @@ We provide a reference implementation of the algorithm that the authors describe
 
 The second method applies to a class of graph statistics which can be written as the solution to a particular linear programming problem.
 Again, the primary difficulty in this method is formulating and then solving that problem.
-We provide a reference implementation of the algorithm that the authors describe for computing approximations for number of triangles in a graph and the number of k-stars in a graph.
+We provide a reference implementation of the algorithm that the authors describe for computing approximations for number of triangles in a graph.
 
 Our implementation uses [networkx](https://networkx.org) to perform the required graph computations and [scipy](https://www.scipy.org)
 (in particular the optimisation algorithms provided by [scipy.optimize](https://docs.scipy.org/doc/scipy/reference/optimize.html))
