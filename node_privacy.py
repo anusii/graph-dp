@@ -139,7 +139,7 @@ print("Differentially private k-star count = %f\n" % dp_kstar_count)
 # Linear Programming
 # =============================================================================
 # Generate a random graph
-n = np.random.randint(2 ** 7, 2 ** 8)
+n = 2 ** 7
 p = 2 ** -4
 G = nx.random_graphs.gnp_random_graph(n, p)
 
@@ -174,3 +174,51 @@ mechanism = LaplaceMechanism(epsilon=epsilon, sensitivity=sensitivity)
 # Compute the differentially private query response
 dp_triangle_count = mechanism.release(np.array([-res.fun]))[0]
 print("Differentially private triangle count = %f\n" % dp_triangle_count)
+
+# =============================================================================
+# Naive Degree Truncation
+# =============================================================================
+def truncate(G, D):
+    survivors = [node for node in G.nodes() if G.degree(node) <= D]
+    H = nx.subgraph(G, survivors)
+    return H
+
+def truncation_smooth_sensitivity(G, D, beta):
+    n = len(G.nodes())
+
+    # Compute bounds on the local sensitivity at distance s for 0 <= s <= D
+    hist = np.array(nx.degree_histogram(G))
+    pmf = np.zeros(n+1)
+    pmf[:len(hist)] = hist
+    cmf = np.cumsum(pmf)
+    N = [cmf[min(D+s+1, len(cmf)-1)] - cmf[max(D-s-1, 0)] for s in range(n+1)]
+    C = 1 + np.arange(n+1) + N
+
+    beta = 1.0/6.0
+    smooth_sensitivity = np.max(np.exp(-beta*np.arange(n+1)) * C)
+    return smooth_sensitivity
+
+# =============================================================================
+# Generate a random graph
+n = 2 ** 10
+p = 2 ** -4
+G = nx.random_graphs.gnp_random_graph(n, p)
+
+# Set the degree bound
+D = 2 ** 10
+
+# Compute exact query response on truncated graph, i.e. f(T(G))
+H = truncate(G, D)
+trunc_edge_count = np.array([len(H.edges())], dtype=np.float)
+
+# Create a differentially private release mechanism
+epsilon = 1.0
+beta = epsilon/6.0
+mechanism = CauchyMechanism(epsilon=epsilon, beta=beta)
+
+# Compute the differentially private query response
+bounded_degree_f_sensitivity = D
+smooth_sensitivity = bounded_degree_f_sensitivity * truncation_smooth_sensitivity(G, D, beta)
+dp_trunc_edge_count = mechanism.release(trunc_edge_count, smooth_sensitivity)
+
+# -----------------------------------------------------------------------------
