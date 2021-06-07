@@ -1,17 +1,26 @@
 # Graph Differential Privacy
 
-Implementations of differentially private release mechanisms for graph statistics.
+This repository provides implementations of differentially private release mechanisms for graph statistics.
+These implementations were originally produced in support of the paper "Private Graph Data Release: A Survey" by
+Yang Li, Michael Purcell, Thierry Rakotoarivelo, David Smith, Thilina Ranbaduge, and Kee Siong Ng.
 
-Despite the extensive literature devoted to graph differential privacy, there is a paucity of open source tools that implement these techniques. As such, it is frequently the case that researchers that want to use or extend these results will need to build their own tools to do so.  In many cases, a differentially private release mechanism for graph statistics can be decomposed into two pieces: a computation step that produces exact query responses on an underlying graph and a perturbation step that adds noise to the exact query responses to achieve some level of differential privacy.
+## Edge Differential Privacy
+To demonstrate techniques designed to provide edge differential privacy, we implemented some of the algorithms described in the paper
+"Smooth Sensitivity and Sampling in Private Data Analysis" by Kobbi Nissim, Sofya Raskhodnikova, and Adam Smith.
+In this paper, the authors discuss several graph statistics with large global sensitivity.  For typical graphs, however,
+the local sensitivity of these statistics can be much smaller. The authors prove that, by adding noise scaled according to a smooth
+upper bound to the local sensitivity, it is possible to create practical differentially private release mechanisms for these statistics.
 
-Computing the exact query responses involves working with the underlying graph data structure. There are many open source tools which provide efficient implementations of common graph algorithms. See for example
-\cite{Bromberger17},
-\cite{csardi2006}, \cite{hagberg2008exploring}, and \cite{peixoto_graph-tool_2014}. In some cases, these algorithms can be used directly to compute the statistics of interest. In other cases, these algorithms are used to produce lower-sensitivity approximations to a query of interest. For example, in \cite{kasiviswanathan2013analyzing} network flows on graphs derived from the original graph are used to compute query responses on arbitrary graphs with sensitivity similar to that of the query restricted to graphs with bounded degree.  
+The primary difficulty with this approach is computing the value of the smooth upper bound for the local sensitivity of the various graph statistics.
+Doing so efficiently requires bespoke algorithms for each statistic of interest. 
+We provide reference implementations for the algorithms that the authors describe for computing smooth upper bounds for the local sensitivity
+of the number of triangles in a graph and for the cost of a minimum spanning tree for a graph.
 
-In this setting, the perturbation step amounts to a straight-forward application of the appropriate differentially private release mechanism. While many such release mechanisms are mathematically simple, creating secure implementations is fraught with peril.  As with cryptographic libraries, it is important to consider issues such as secure random number generation and robustness with respect to various side-channel attacks. Furthermore, because many differentially private release mechanisms operate on real numbers, as opposed to integers or floating point numbers that can be represented exactly in a computer, naive implementations of some mechanisms can be insecure. See for example \cite{mironov2012}. There are a number of open-source differential privacy libraries, see for example \cite{Gaboardi2020APF}, \cite{holohan2019diffprivlib}, \cite{rubinstein2017painfree}, and \cite{wilson2019differentially}. These libraries vary widely in the kinds of functionality that they provide, the security guarantees that they can offer, and the performance that they can achieve.  While most open-source libraries are sufficient for some tasks, e.g. research involving numerical simulations that is based on synthetic data, some may be insufficient for use in applications which will be used to protect real sensitive data.
+We have produced two versions of our implementations for these algorithms. The first, [edge_privacy_networkx.py], uses networkx to perform the
+required graph computations. The second, [edge_privacy_igraph.py], uses igraph for this purpose. Both versions use the implementation of the
+Cauchy mechanism provided by the [RelM](https://github.com/anusii/RelM) library to release the differentially private query responses.
  
-To illustrate this approach, we have produced reference implementations of some of the algorithms described in \cite{kasiviswanathan2013analyzing}~\footnote{Available at: https://github.com/michaelpatrickpurcell/graph-dp} and \cite{nissim2007smooth}. 
-These reference implementations use a new differential privacy library, RelM~\footnote{Code and documentation are available at https://github.com/anusii/RelM}, developed by one of the authors to perturb the data prior to release. RelM provides secure implementations of many of the differentially private release mechanisms described in \cite{dwork2014algorithmic}.
 
-In cases where the computation of differentially private query responses cannot be decomposed into separate computation and perturbation steps, the situation is more grim.  We are unaware of any libraries that provide such functionality and as such any efforts to use or extend these algorithms will require the use of bespoke tools. 
-
+## Node Differential Privacy
+To demonstrate techniques designed to provide node differential privacy, we implemented some of the algorithms described in the paper
+"Analyzing Graphs with Node Differential Privacy" by Shiva Prasad Kasiviswanathan, Kobbi Nissim, Sofya Raskhodnikova, and Adam Smith.
