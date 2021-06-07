@@ -1,5 +1,6 @@
 # Reference implementations of techniques described in the paper
 # Smooth Sensitivity and Sampling in Private Data Analysis
+# by Kobbi Nissim, Sofya Raskhodnikova, and Adam Smith
 # using igraph and relm
 
 import numpy as np

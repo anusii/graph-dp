@@ -1,5 +1,6 @@
 # Reference implementations of techniques described in the paper
 # Analyzing Graphs with Node Differential Privacy
+# Shiva Prasad Kasiviswanathan, Kobbi Nissim, Sofya Raskhodnikova, and Adam Smith
 # using networkx, scipy.optimize, and relm
 
 import numpy as np
