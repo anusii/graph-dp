@@ -41,8 +41,9 @@ The second method applies to a class of graph statistics which can be written as
 Again, the primary difficulty in this method is formulating and then solving that problem.
 We provide a reference implementation of the algorithm that the authors describe for computing approximations for number of triangles in a graph.
 
-Our implementation uses [networkx](https://networkx.org) to perform the required graph computations and [scipy](https://www.scipy.org)
-(in particular the optimisation algorithms provided by [scipy.optimize](https://docs.scipy.org/doc/scipy/reference/optimize.html))
+Our implementation, [node_privacy.py](./node_privacy.py), uses [networkx](https://networkx.org) to perform the required graph computations
+and [scipy](https://www.scipy.org) (in particular the optimisation algorithms provided by
+[scipy.optimize](https://docs.scipy.org/doc/scipy/reference/optimize.html))
 to solve the required optimisation problems. Both methods use the implementation of the Laplace mechanism provided by the
 [RelM](https://github.com/anusii/RelM) library to release the differentially private query responses.
   
