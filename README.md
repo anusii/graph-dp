@@ -17,12 +17,6 @@ Doing so efficiently requires bespoke algorithms for each statistic of interest.
 We provide reference implementations of the algorithms that the authors describe for computing smooth upper bounds for the local sensitivity
 of the number of triangles in a graph and for the cost of a minimum spanning tree for a graph.
 
-We have produced two versions of our implementations for these algorithms. The first, [edge_privacy_networkx.py](./edge_privacy_networkx.py), 
-uses [networkx](https://networkx.org) to perform the required graph computations.
-The second, [edge_privacy_igraph.py](./edge_privacy_igraph.py), uses [igraph](https://igraph.org) for this purpose.
-Both versions use the implementation of the Cauchy mechanism provided by the [RelM](https://github.com/anusii/RelM) 
-library to release the differentially private query responses.
- 
 Our implementation, [edge_privacy.ipynb](./edge_privacy.ipynb), uses [networkx](https://networkx.org) to perform the required graph computations.
 We use the implementation of the Cauchy mechanism provided by the
 [RelM](https://github.com/anusii/RelM)
