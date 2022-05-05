@@ -28,7 +28,7 @@ Doing so efficiently requires bespoke algorithms for each statistic of interest.
 We provide reference implementations of the algorithms that the authors describe for computing smooth upper bounds for the local sensitivity
 of the number of triangles in a graph and for the cost of a minimum spanning tree for a graph.
 
-Our implementation, [edge_differential_privacy.ipynb](./edge_differential_privacy.ipynb), uses [networkx](https://networkx.org) to perform the required graph computations.
+Our implementation, [edge_differential_privacy.ipynb](./edge_differential_privacy.ipynb), uses [NetworkX](https://networkx.org) to perform the required graph computations.
 We use the implementation of the Cauchy mechanism provided by the
 [RelM](https://github.com/anusii/RelM)
 library to release the differentially private query responses.
@@ -50,7 +50,7 @@ The second method applies to a class of graph statistics which can be written as
 Again, the primary difficulty in this method is formulating and then solving that problem.
 We provide a reference implementation of the algorithm that the authors describe for computing approximations for number of triangles in a graph.
 
-Our implementation, [node_differential_privacy.ipynb](./node_differential_privacy.ipynb), uses [networkx](https://networkx.org) to perform the required graph computations
+Our implementation, [node_differential_privacy.ipynb](./node_differential_privacy.ipynb), uses [NetworkX](https://networkx.org) to perform the required graph computations
 and [scipy](https://www.scipy.org) (in particular the optimisation algorithms provided by
 [scipy.optimize](https://docs.scipy.org/doc/scipy/reference/optimize.html))
 to solve the required optimisation problems. We use the implementation of the Laplace mechanism provided by the
@@ -65,5 +65,5 @@ By focusing on an "egocentric" model of centrality, the authors effectively redu
 
 One aspect that makes this algorithm challenging to use is that it uses a bespoke stratified sampling algorithm to implement a version of the exponential mechanism. This makes it difficult to use existing differential privacy libraries to apply the required perturbations in this step of the algorithm. In our example, we implement this bespoke sampling algorithm but have made no attempt to ensure that our implementation is secure.
 
-Our implementation, [egocentric_betweenness_centrality.ipynb](./egocentric_betweenness_centrality.ipynb) uses [networkx](https://networkx.org) to perform the required graph computations. We use the implementation of the Laplace mechanism provided by the
+Our implementation, [egocentric_betweenness_centrality.ipynb](./egocentric_betweenness_centrality.ipynb) uses [NetworkX](https://networkx.org) to perform the required graph computations. We use the implementation of the Laplace mechanism provided by the
 [RelM](https://github.com/anusii/RelM) library to release the differentially private query responses.
