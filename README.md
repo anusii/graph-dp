@@ -1,7 +1,7 @@
 # Graph Differential Privacy
 
 This repository provides implementations of differentially private release mechanisms for graph statistics.
-These implementations were originally produced in support of the paper "Private Graph Data Release: A Survey" by
+These implementations were originally produced in support of the paper [Private Graph Data Release: A Survey](https://arxiv.org/pdf/2107.04245.pdf) by
 Yang Li, Michael Purcell, Thierry Rakotoarivelo, David Smith, Thilina Ranbaduge, and Kee Siong Ng.
 
 We decided to create this repository in order to address the natural question of what methods should be used in various situations. This turns out to be a rather difficult question to answer in any way other than by saying, "it depends". For any system, the privacy and utility requirements must be taken into account. Furthermore, the nature of the underlying data and the nature queries that the system is designed to answer will determine what techniques are available for consideration.
