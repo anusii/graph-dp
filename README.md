@@ -13,7 +13,7 @@ In this repository are ipython notebooks that demonstrate how to use existing gr
 ## Generating Random Graphs
 It is often useful to use synthetic data to for testing purposes.  As such, generating various types of random graphs is a fundamental task when experimenting with graph differential privacy.
 
-In notebook [generating_random_graphs.ipynb](./generating_random_graphs.ipynb) we demonstrate how to use two popular graph analytics python packages, [NetworkX]((https://networkx.org)) and [igraph](https://igraph.org), to generate random graphs.  For both packages, we show how to generate random graphs drawn from the [Erdős-Rényi model](https://en.wikipedia.org/wiki/Erdős–Rényi_model) and the [Barabási-Albert model](https://en.wikipedia.org/wiki/Barabási–Albert_model). We also show how to interrogate the resulting graphs to determine/verify that they have the expected number of nodes and edges.
+In notebook [generating_random_graphs.ipynb](./generating_random_graphs.ipynb) we demonstrate how to use two popular graph analytics python packages, [NetworkX](https://networkx.org) and [igraph](https://igraph.org), to generate random graphs.  For both packages, we show how to generate random graphs drawn from the [Erdős-Rényi model](https://en.wikipedia.org/wiki/Erdős–Rényi_model) and the [Barabási-Albert model](https://en.wikipedia.org/wiki/Barabási–Albert_model). We also show how to interrogate the resulting graphs to determine/verify that they have the expected number of nodes and edges.
 
 ## Edge Differential Privacy
 To demonstrate techniques designed to provide edge differential privacy, we implemented some of the algorithms described in the paper
